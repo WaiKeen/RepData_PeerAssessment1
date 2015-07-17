@@ -1,66 +1,84 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Loading the 'dplyr' and 'lattice' library to be utilized.  
 Next to read in the csv file and converting the date from a factor to date format.
-```{r echo=TRUE, warning=FALSE, message=FALSE}
 
+```r
 library(dplyr)
 library(lattice)
 data <- read.csv('activity.csv')
 data$date <- as.Date(data$date)
-
 ```
 
 ## What is mean total number of steps taken per day?
 
 To ignore the missing figures from the dataset by removing all 'NA' from the dataset.
 Plot a Histogram to show the Total number of steps taken each day.
-```{r echo = TRUE}
 
+```r
 datawithoutna <- data[!is.na(data$steps),]
 datawithoutna_sum <- summarise(group_by(datawithoutna,date), steps= sum(steps))
 hist(datawithoutna_sum$steps,breaks= 10, xlab= "", main= "Total number of steps taken each day")
 ```
 
-Calculating the Mean & Median of the total number of steps.
-```{r echo = TRUE}
-mean(datawithoutna_sum$steps)
-median(datawithoutna_sum$steps)
+![](PA1_template_files/figure-html/unnamed-chunk-2-1.png) 
 
+Calculating the Mean & Median of the total number of steps.
+
+```r
+mean(datawithoutna_sum$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(datawithoutna_sum$steps)
+```
+
+```
+## [1] 10765
 ```
 ## What is the average daily activity pattern?
 
 Plot a time series plot of 5-minutes interval (x-axis) and average number of steps, averaged across all days (y-axis).
-```{r echo = TRUE}
+
+```r
 datawithoutna_average <- summarise(group_by(datawithoutna,interval), Average = mean(steps))
 plot(strptime(sprintf("%04d", datawithoutna_average$interval), format="%H%M"), datawithoutna_average$Average,type = "l", xlab = "5-minute interval", main = "Average daily activity pattern" , ylab = "Average number of steps taken, across all days" )
-
 ```
 
-The 5-minute interval, on average across all the days in the dataset, contained the maximum number of steps:
-```{r echo = TRUE}
-datawithoutna_average$interval[which.max(datawithoutna_average$Average)]
+![](PA1_template_files/figure-html/unnamed-chunk-4-1.png) 
 
+The 5-minute interval, on average across all the days in the dataset, contained the maximum number of steps:
+
+```r
+datawithoutna_average$interval[which.max(datawithoutna_average$Average)]
+```
+
+```
+## [1] 835
 ```
 
 ## Imputing missing values
 Total number of missing values in the dataset
-```{r echo = TRUE}
-sum(is.na(data$steps))
 
+```r
+sum(is.na(data$steps))
+```
+
+```
+## [1] 2304
 ```
 
 Strategy for inputting missing data based on the average number of steps taken (average across all days) of the interval as calculated for average daily activity pattern.  
   
 Plot a Histogram to show the Total number of steps taken per day with filled-in Missing numbers.
-```{r echo = TRUE}
+
+```r
 datafilledna <- merge(data,datawithoutna_average)
 dataindexna <- which(is.na(datafilledna$steps))
 datafilledna$steps[dataindexna] <- datafilledna$Average[dataindexna]
@@ -68,14 +86,26 @@ datafilledna$steps[dataindexna] <- datafilledna$Average[dataindexna]
 datafilledna_sum <- summarise(group_by(datafilledna,date), steps = sum(steps))
 
 hist(datafilledna_sum$steps,breaks= 10, xlab = "", main = "Total number of steps taken each day (Filled-in NA)")
-
 ```
 
-Calculating the Mean & Median of the total number of steps with filled-in Missing numbers.
-```{r echo = TRUE}
-mean(datafilledna_sum$steps)
-median(datafilledna_sum$steps)
+![](PA1_template_files/figure-html/unnamed-chunk-7-1.png) 
 
+Calculating the Mean & Median of the total number of steps with filled-in Missing numbers.
+
+```r
+mean(datafilledna_sum$steps)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
+median(datafilledna_sum$steps)
+```
+
+```
+## [1] 10766.19
 ```
 
 The estimates for mean is same when we ignore missing numbers but the median differ slightly when we filled-in the Missing numbers.
@@ -83,17 +113,19 @@ The estimates for mean is same when we ignore missing numbers but the median dif
 ## Are there differences in activity patterns between weekdays and weekends?
 
 Create a new factor variable in the dataset to identify whether the date is Weekday or Weekend.
-```{r echo = TRUE}
+
+```r
 datafillednawkd <- datafilledna
 datafillednawkd$day <- ifelse(weekdays(datafillednawkd$date) %in% c("Saturday","Sunday"), "Weekend","Weekday")
-
 ```
 
 Plot a time series plot for Weekday & Weekend of 5-minutes interval (x-axis) and average number of steps, averaged across all days with filled-in Missing numbers (y-axis).
-```{r echo = TRUE}
+
+```r
 datafillednawkd_average <- summarise(group_by(datafillednawkd,interval,day), Average = mean(steps))
 xyplot(Average ~ interval | day,data = datafillednawkd_average, layout = c(1,2), type = "l", xlab = "5-minute interval", ylab = "Averaged across all days")
-
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10-1.png) 
 
 End of Reproducible Research - Peer Assignment 1
